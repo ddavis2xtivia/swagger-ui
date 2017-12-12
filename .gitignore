@@ -1,4 +1,7 @@
 node_modules
+build
+bin
+.gradle
 .idea
 .deps_check
 .DS_Store

@@ -1,0 +1,61 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'org.dm.gradle:gradle-bundle-plugin:0.8.5',
+         'org.codehaus.groovy:groovy-all:2.4.7', 'org.osgi:org.osgi.core:6.0.0',gradleApi(), localGroovy(),
+            'org.hidetake:groovy-ssh:2.7.2', 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1',
+            'org.eclipse.aether:aether-impl:1.1.0', 'org.eclipse.aether:aether-transport-http:1.1.0',
+            'org.eclipse.aether:aether-transport-file:1.1.0', 'org.eclipse.aether:aether-connector-basic:1.1.0',
+            'org.apache.maven:maven-aether-provider:3.3.9', 'com.liferay:com.liferay.gradle.plugins:3.0.59',
+            gradleApi(), files('H:/Projects/xtivia/liferay/dxp-gradle-deploy-plugin/build/libs/dxp-gradle-deployment-plugin-1.0.9.jar')
+    }
+}
+
+repositories {
+    maven {
+       url 'http://cdn.repository.liferay.com/nexus/content/groups/public'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'org.dm.bundle'
+apply plugin: 'maven'
+apply plugin: 'com.xtivia.speedray.gogo.deploy'
+
+def packageJson = new groovy.json.JsonSlurper().parseText(file('package.json').text)
+version = packageJson.version
+group = 'com.xtivia.speedray'
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+	compileOnly'com.liferay.portal:com.liferay.portal.kernel:2.0.0',
+            'com.liferay:com.liferay.portal.configuration.metatype:2.0.0',
+            'javax.portlet:portlet-api:2.0',
+            'javax.servlet:servlet-api:2.5',
+            'biz.aQute.bnd:biz.aQute.bndlib:3.1.0',
+            'org.osgi:org.osgi.compendium:5.0.0'
+
+}
+
+/* enable docker support for deploy */
+gogo {
+    fileMapping '/H:/Projects/xtivia/sr/swagger-ui/build/libs','/var/liferay/swagger-ui'
+}
+
+bundle {
+    instructions << [
+            'Bundle-Version'   : version,
+            'Import-Package'   : 'com.liferay.portal.kernel.portlet.bridges.mvc;version="[1.0,2)",javax.portlet;version="[2.0,3)",javax.servlet;version="[3.0,4)",javax.servlet.http;version="[3.0,4)"',
+            'Require-Capability' : 'osgi.extender;filter:="(&(osgi.extender=jsp.taglib)(uri=http://java.sun.com/portlet_2_0))",osgi.extender;filter:="(&(osgi.extender=jsp.taglib)(uri=http://liferay.com/tld/aui))",osgi.extender;filter:="(&(osgi.extender=jsp.taglib)(uri=http://liferay.com/tld/portlet))",osgi.extender;filter:="(&(osgi.extender=jsp.taglib)(uri=http://liferay.com/tld/theme))",osgi.extender;filter:="(&(osgi.extender=jsp.taglib)(uri=http://liferay.com/tld/ui))",osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"',
+            '-jsp'             : '*.jsp,*.jspf',
+            '-plugin.bundle'   : 'com.liferay.ant.bnd.resource.bundle.ResourceBundleLoaderAnalyzerPlugin',
+            '-plugin.jsp'      : 'com.liferay.ant.bnd.jsp.JspAnalyzerPlugin',
+            '-plugin.sass'     : 'com.liferay.ant.bnd.sass.SassAnalyzerPlugin',
+            '-sass'            : '*',
+            '-sources'         : 'true'
+    ]
+}

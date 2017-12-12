@@ -100,7 +100,7 @@ export const resolveSpec = (json, url) => ({specActions, specSelectors, errActio
 
   return resolve({
     fetch,
-    spec: json,
+    spec: json[0],
     baseDoc: url,
     modelPropertyMacro,
     parameterMacro,
